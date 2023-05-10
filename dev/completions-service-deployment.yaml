@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: completions-service-deployment
+  labels:
+    app: completions-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: completions-service
+  template:
+    metadata:
+      labels:
+        app: completions-service
+    spec:
+      containers:
+        - name: edit-service
+          image: hasitha2021/completions-service:develop-latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: openai-api-key
+            - name: MYSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: database_host
+            - name: MYSQL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: database_port
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: database_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: database_pwd
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: completion_database
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-microservices-secrets
+                  key: api-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: completions-service-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: completions-service
+  ports:
+  - port: 6063
+    targetPort: 8000
+    protocol: TCP
